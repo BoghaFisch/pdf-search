@@ -44,22 +44,18 @@ public class PostingsList implements Serializable {
     	return list.iterator();
     }
     public void add(PostingsEntry pe) {
-    	// If the last element is not of the same docID, add that postings entry
     	if (list.isEmpty() || list.getLast().docID != pe.docID) {
     		list.addLast(pe);
     	}
-    	// Else (assume that the pe only has one entry) add it to this list
     	else if (list.getLast().docID == pe.docID) {
     		list.getLast().addPos(pe.getLastPos());
     	}
     }
     /** Put a new  PostingsEntry to PostingsList, score set to 0  */
     public void add(int docID, int pos) {
-    	// If the PostingsList is empty, or if the last entry on it does not have the same docID (we haven't added any entries for this doc) => add to last
     	if (list.isEmpty() || list.getLast().docID != docID) {
     		list.addLast(new PostingsEntry(docID, pos));
     	}
-    	// Else if the list already have an entry of the same docID => add a new position to the entry
     	else if (list.getLast().docID == docID) {
     		list.getLast().addPos(pos);
     	}

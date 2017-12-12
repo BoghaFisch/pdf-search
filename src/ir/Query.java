@@ -19,8 +19,6 @@ public class Query {
     
     public LinkedList<String> terms = new LinkedList<String>();
     public HashMap<String, Double> weights = new HashMap<String, Double>();
-    
-    // Query length (represented as number of words)
     public int queryLength = 0;
 
     /**
@@ -68,41 +66,29 @@ public class Query {
      *  Expands the Query using Relevance Feedback
      */
     public void relevanceFeedback (PostingsList results, boolean[] docIsRelevant, Indexer indexer) {
-    	
-    	// Pick out only the documents that are relevant
     	ArrayList<Integer> relevantDocs = new ArrayList<Integer>();
     	for (int i = 0; i < docIsRelevant.length; i++) {
     		if (docIsRelevant[i]) {
     			relevantDocs.add(results.get(i).docID);
     		}
     	}
-    	// If no docs were marked relevant, return without doing Rocchio
-    	if (relevantDocs.size() < 1)
+    	if (relevantDocs.size() < 1) {
     		return;
+    	}
     	
-    	// Create td-idf vectors for those docs
     	HashMap<Integer, HashMap<String, Double>> tfidfs = new HashMap<Integer, HashMap<String, Double>>();
     	int N = indexer.index.docIDs.size();
     	
-    	// For each relevant doc, calculate tf-idf vector
     	for (Integer docID : relevantDocs) {
     		HashMap<String, Double> docVector = new HashMap<String, Double>();
-    		
-    		// For each word in the doc, fetch term frequency and document frequency and calc tf-idf score
     		HashMap<String, Integer> doc = indexer.index.getDocument(docID);
     		for (String word : doc.keySet()) {
-  			
-    			// Calculate tf
     			int tf = doc.get(word);
     			queryLength += tf;
-    			
-    			// Calc tf-idf and put to docvector. Normalize with doc length
     			double idf = Math.log(N / (double) indexer.index.getPostings(word).size());
     			double tfidf = tf * idf / indexer.index.docLengths.get(docID+"");
     			docVector.put(word, tfidf);
     		}
-    		
-    		// Put the tf-idf vector for the document in the collection of tfidfs
     		tfidfs.put(docID, docVector);
     	}
     	
@@ -116,21 +102,14 @@ public class Query {
     	for (Integer docID : relevantDocs) {
     		HashMap<String, Double> docVector = tfidfs.get(docID);
     		for (String word : docVector.keySet()) {
-    			
-    			// If the term is not already in the query, add it to terms and add its tfidf divided by number of relevant docs to weights
     			if (!weights.containsKey(word)) {
     				terms.add(word);
     				weights.put(word, BETA*docVector.get(word)/relevantDocs.size());
     			}
-    			// Else if term is already in query, add the tfidf divided by number of relevant docs to weight
     			else {
     				weights.put(word, weights.get(word) + BETA*(docVector.get(word))/relevantDocs.size());
     			}
     		}
-    	}
-    	// Print scores for all the terms in the query
-    	for (String t : terms) {
-    		System.out.println(t+" "+weights.get(t));
     	}
     }
 }

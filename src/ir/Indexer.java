@@ -81,29 +81,22 @@ public class Indexer {
 				}
 		    } 
 		    else {
-				//System.err.println( "Indexing " + f.getPath() );
-				// First register the document and get a docID
 				int docID = generateDocID();
 				index.docIDs.put( "" + docID, f.getPath() );
 				try {
-				    //  Read the first few bytes of the file to see if it is 
-				    // likely to be a PDF 
 				    Reader reader = new FileReader( f );
 				    char[] buf = new char[4];
 				    reader.read( buf, 0, 4 );
 				    if ( buf[0] == '%' && buf[1]=='P' && buf[2]=='D' && buf[3]=='F' ) {
-						// We assume this is a PDF file
 						try {
 						    String contents = extractPDFContents( f );
 						    reader = new StringReader( contents );
 						}
 						catch ( IOException e ) {
-						    // Perhaps it wasn't a PDF file after all
 						    reader = new FileReader( f );
 						}
 				    }
 				    else {
-						// We hope this is ordinary text
 						reader = new FileReader( f );
 				    }
 				    SimpleTokenizer tok = new SimpleTokenizer( reader );
